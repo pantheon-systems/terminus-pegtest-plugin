@@ -1,0 +1,16 @@
+{
+    "name": "pantheon-systems/terminus-peg-test-plugin",
+    "description": "PEG Test - A Terminus plugin to test Pantheon Enterprise Gateway functionality.",
+    "type": "terminus-plugin",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Pantheon\\TerminusPegTest\\": "src"
+        }
+    },
+    "extra": {
+        "terminus": {
+            "compatible-version": "^1|^2"
+        }
+    }
+}
