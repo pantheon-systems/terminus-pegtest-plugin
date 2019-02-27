@@ -25,6 +25,34 @@ class PegCommand extends SSHBaseCommand
     protected $unavailable_commands = [];
 
     /**
+     * The Site ID.
+     *
+     * @var string
+     */
+    protected $siteID = '';
+
+    /**
+     * The Environment ID.
+     *
+     * @var string
+     */
+    protected $envID = '';
+
+    /**
+     * The login and FQDN to the site and environment.
+     *
+     * @var string
+     */
+    protected $siteaddress = '';
+
+    /**
+     * The site framework.
+     *
+     * @var string
+     */
+    protected $framework = '';
+
+    /**
      * sprintf templates for the command to run for a given CLI.
      *
      * @var array
@@ -33,6 +61,21 @@ class PegCommand extends SSHBaseCommand
         'drush' => 'scr %s --script-path=../files',
         'wp' => 'eval-file ../files/%s',
     ];
+
+    /**
+     * Get some commonly-used information when a command first runs.
+     *
+     * @param string $site_env_id Name of the environment to run the drush command on.
+     */
+    protected function baseCommand($site_env_id)
+    {
+        list($site, $environment) = $this->getSiteEnv($site_env_id);
+        $this->envID = $environment->getName();
+        $this->siteID = $site->get('id');
+        $this->siteAddress = "{$this->envID}.{$this->siteID}@appserver.{$this->envID}.{$this->siteID}.drush.in";
+        $this->framework = $site->get('framework');
+        return [$site, $environment];
+    }
 
     /**
      * Get a list of PEG constants.
@@ -52,7 +95,7 @@ class PegCommand extends SSHBaseCommand
      */
     public function constantsListCommand($site_env_id)
     {
-        list($site, $environment) = $this->getSiteEnv($site_env_id);
+        list($site, $environment) = $this->baseCommand($site_env_id);
         if ($stunnels = $site->get('stunnel')) {
             $stunnels = (array)$stunnels;
             $constants = array_map(function ($stunnelName, $stunnelDetails) {
@@ -96,6 +139,7 @@ class PegCommand extends SSHBaseCommand
             throw new TerminusException('The {constant-name} option must be specified.');
         }
 
+        $this->baseCommand($site_env_id);
         $results = $this->runTest($site_env_id, 'curltest.php', $options);
 
         if (!empty($results['results'])) {
@@ -148,6 +192,7 @@ class PegCommand extends SSHBaseCommand
             $options['bind-dn'] = '';
         }
 
+        $this->baseCommand($site_env_id);
         $results = $this->runTest($site_env_id, 'ldaptest.php', $options);
 
         if (!empty($results['results'])) {
@@ -179,6 +224,7 @@ class PegCommand extends SSHBaseCommand
             throw new TerminusException('The {constant-name} option must be specified.');
         }
 
+        $this->baseCommand($site_env_id);
         $results = $this->runTest($site_env_id, 'sshtest.php', $options);
 
         if (!empty($results['results'])) {
@@ -215,17 +261,57 @@ class PegCommand extends SSHBaseCommand
     {
         $this->passthru("rsync -rlIpz --ipv4 -e 'ssh -p 2222' $src $dest");
     }
+    
+    /**
+     * Use SFTP to put a file in a place.
+     *
+     * @param string $localFilePath The local path to the file
+     * @param string $destPath The destination path on the server.
+     */
+    protected function putFile($localFilePath, $destPath = 'files/')
+    {
+        $sftpCommand = "sftp -o Port=2222 {$this->siteAddress} <<< $'put $localFilePath $destPath'";
+        $this->passthru($sftpCommand);
+    }
+
+    /**
+     * Use SFTP to get a remote file.
+     *
+     * @param string $serverPath The path to the file on the server.
+     * @param string $localFilePath The path to store the file in.
+     */
+    protected function getFile($serverPath, $localFilePath)
+    {
+        $sftpCommand = "sftp -o Port=2222 {$this->siteAddress}:$serverPath $localFilePath";
+        $this->passthru($sftpCommand);
+    }
+
+    /**
+     * Use SFTP to remove a remote file.
+     *
+     * @param string $serverPath The path of the file on the server.
+     */
+    protected function deleteFile($serverPath)
+    {
+        $sftpCommand = "sftp -o Port=2222 {$this->siteAddress} <<< $'rm $serverPath'";
+        $this->passthru($sftpCommand);
+    }
 
     /**
      * Wrapper for PHP's passthru command.
      *
      * @param string $command The command to run.
      */
-    protected function passthru($command)
+    protected function passthru($command, $quiet = true)
     {
         $result = 0;
+        if ($quiet) \ob_start();
         \passthru($command, $result);
-
+        if ($quiet) {
+            $output = \ob_get_contents();
+            \ob_end_clean();
+            $this->log()->debug($output);
+        }
         if ($result != 0) {
             throw new TerminusException('Command `{command}` failed with exit code {status}', [
                 'command' => $command,
@@ -245,13 +331,8 @@ class PegCommand extends SSHBaseCommand
      */
     protected function runTest($site_env_id, $filename, array $options)
     {
-        list($site, $environment) = $this->getSiteEnv($site_env_id);
-        $envID = $environment->getName();
-        $siteID = $site->get('id');
-        $siteAddress = "$envID.$siteID@appserver.$envID.$siteID.drush.in";
         $tmp = \sys_get_temp_dir();
         $testFilename = "$tmp/$filename";
-        $framework = $site->get('framework');
 
         // Generate the test file based on command line options, then push to the site.
         $template = \file_get_contents(__DIR__ . "/../Resources/Templates/$filename");
@@ -259,9 +340,9 @@ class PegCommand extends SSHBaseCommand
             $template = str_replace("%$k%", \htmlspecialchars($v), $template);
         }
         \file_put_contents($testFilename, $template);
-        $this->rsync($testFilename, "$siteAddress:files");
+        $this->rsync($testFilename, "{$this->siteAddress}:files");
 
-        switch ($framework) {
+        switch ($this->framework) {
             case 'drupal':
             case 'drupal8':
                 $this->command = 'drush';
@@ -281,10 +362,13 @@ class PegCommand extends SSHBaseCommand
         $this->prepareEnvironment($site_env_id);
         $this->executeCommand($toExecute);
 
-        // Rsync the results file back down to the local machine.
+        // Copy the results file back down to the local machine, then clean up.
         $resultsFilename = "$tmp/testresults.json";
         $serverResultsFilename = pathinfo($filename)['filename'] . '_results.json';
-        $this->rsync("$siteAddress:files/$serverResultsFilename", $resultsFilename);
+        $this->rsync("{$this->siteAddress}:files/$serverResultsFilename", $resultsFilename);
+        $this->deleteFile("files/$serverResultsFilename");
+        $this->deleteFile("files/$filename");
+
 
         if (!\file_exists($resultsFilename)) {
             throw new TerminusException('Unable to locate results file.');
