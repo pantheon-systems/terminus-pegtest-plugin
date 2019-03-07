@@ -306,10 +306,12 @@ class PegCommand extends SSHBaseCommand
      * Wrapper for PHP's passthru command.
      *
      * @param string $command The command to run.
+     * @return string The output of the command.
      */
     protected function passthru($command, $quiet = true)
     {
         $result = 0;
+        $output = 'Use "quiet=true" to enable output buffering/return';
         if ($quiet) \ob_start();
         \passthru($command, $result);
         if ($quiet) {
