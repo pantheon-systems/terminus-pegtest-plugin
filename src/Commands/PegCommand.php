@@ -58,8 +58,8 @@ class PegCommand extends SSHBaseCommand
      * @var array
      */
     protected $scriptTemplates = [
-        'drush' => 'scr %s --script-path=../files',
-        'wp' => 'eval-file ../files/%s',
+        'drush' => 'scr %script-name% --script-path=%script-path%',
+        'wp' => 'eval-file %script-path%/%script-name%',
     ];
 
     /**
@@ -121,8 +121,8 @@ class PegCommand extends SSHBaseCommand
      * @aliases ptcurl
      *
      * @param string $site_env_id Name of the environment to run the command on.
-     * @option url The URL to use when running the cURL test
-     * @option constant-name The constant name to use when running the cURL test
+     * @option url The URL to use when running the cURL test.
+     * @option constant-name The constant name to use when running the cURL test.
      */
     public function curlTestCommand(
         $site_env_id,
@@ -213,7 +213,7 @@ class PegCommand extends SSHBaseCommand
      * @aliases ptssh
      *
      * @param string $site_env_id Name of the environment to run the command on.
-     * @option constant-name The constant name to use when running the cURL test
+     * @option constant-name The constant name to use when running the cURL test.
      */
     public function simpleSshTestCommand(
         $site_env_id,
@@ -298,6 +298,19 @@ class PegCommand extends SSHBaseCommand
     }
 
     /**
+     * Hacky way to get the binding path on the server using SFTP.
+     *
+     * @return string The binding path of the environment passed to the terminus command.
+     */
+    protected function getBindingPath()
+    {
+        $sftpCommand = "sftp -o Port=2222 {$this->siteAddress} <<< $'pwd'";
+        $results = $this->passthru($sftpCommand);
+        preg_match('/: (.*)$/', $results, $matches);
+        return $matches[1];
+    }
+
+    /**
      * Wrapper for PHP's passthru command.
      *
      * @param string $command The command to run.
@@ -318,6 +331,8 @@ class PegCommand extends SSHBaseCommand
                 'status' => $result
             ]);
         }
+
+        return $output;
     }
 
     /**
@@ -357,7 +372,10 @@ class PegCommand extends SSHBaseCommand
         }
 
         // Run the test.
-        $toExecute = sprintf($this->scriptTemplates[$this->command], $filename);
+        $filesPath = $this->getBindingPath() . '/files';
+        $baseCommand = $this->scriptTemplates[$this->command];
+        $toExecute = \str_replace('%script-path%', $filesPath, $baseCommand);
+        $toExecute = \str_replace('%script-name%', $filename, $toExecute);
         $toExecute = explode(' ', $toExecute);
         $this->prepareEnvironment($site_env_id);
         $this->executeCommand($toExecute);
