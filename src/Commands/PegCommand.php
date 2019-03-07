@@ -143,7 +143,7 @@ class PegCommand extends SSHBaseCommand
         $results = $this->runTest($site_env_id, 'curltest.php', $options);
 
         if (!empty($results['results'])) {
-            $this->log()->notice('cURL test completed successfully; PEG is configured properly.');
+            $this->log()->success('cURL test completed successfully; PEG is configured properly.');
             $this->log()->info($results['results']);
             $this->log()->info('Elapsed time (sec): ' . $results['elapsed']);
         } else {
@@ -196,7 +196,7 @@ class PegCommand extends SSHBaseCommand
         $results = $this->runTest($site_env_id, 'ldaptest.php', $options);
 
         if (!empty($results['results'])) {
-            $this->log()->notice('LDAP test completed succesfully; PEG is configured properly.');
+            $this->log()->success('LDAP test completed succesfully; PEG is configured properly.');
             $this->log()->info($results['results']);
             $this->log()->info('Elapsed time (sec): ' . $results['elapsed']);
         } else {
@@ -235,7 +235,7 @@ class PegCommand extends SSHBaseCommand
         $results = $this->runTest($site_env_id, 'smtptest.php', $options);
 
         if (!empty($results['results'])) {
-            $this->log()->notice('SMTP test completed successfully; PEG is configured properly.');
+            $this->log()->success('SMTP test completed successfully; PEG is configured properly.');
             $this->log()->info($results['results']);
             $this->log()->info('Elapsed time (sec): ' . $results['elapsed']);
         } else {
