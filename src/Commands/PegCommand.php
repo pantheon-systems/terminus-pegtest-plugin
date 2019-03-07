@@ -237,6 +237,45 @@ class PegCommand extends SSHBaseCommand
     }
 
     /**
+     * Run an SMTP test to ensure PEG setup for SMTP requests is working properly.
+     *
+     * @authorize
+     *
+     * @command peg:test:smtp
+     * @aliases ptsmtp
+     *
+     * @param string $site_env_id Name of the environment to run the command on.
+     * @option constant-name The constant name to use when running the cURL test.
+     * @option relay-address The address of the mail server to use an SMTP relay.
+     */
+    public function smtpTestCommand(
+        $site_env_id,
+        $options = [
+            'constant-name' => null,
+            'relay-address' => null,
+        ]
+    ) {
+        // Validate the options.
+        if (empty($options['constant-name'])) {
+            throw new TerminusException('The {constant-name} option must be specified.');
+        }
+        if (empty($options['relay-address'])) {
+            throw new TerminusException('The {relay-address} option must be specified.');
+        }
+
+        $this->baseCommand($site_env_id);
+        $results = $this->runTest($site_env_id, 'smtptest.php', $options);
+
+        if (!empty($results['results'])) {
+            $this->log()->notice('SMTP test completed successfully; PEG is configured properly.');
+            $this->log()->info($results['results']);
+            $this->log()->info('Elapsed time (sec): ' . $results['elapsed']);
+        } else {
+            $this->log()->error('SMTP test completed unsuccessfully. Error was: ' . $results['error']);
+        }
+    }
+
+    /**
      * Run an authenticated SSH test to ensure PEG setup for complex SSH requests is working properly.
      *
      * @authorize
