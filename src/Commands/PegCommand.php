@@ -244,6 +244,33 @@ class PegCommand extends SSHBaseCommand
     }
 
     /**
+     * Run an OpenSSL cert check.
+     *
+     * @authorize
+     *
+     * @command peg:showcerts
+     * @aliases ptcerts
+     *
+     * @param string $site_env_id Name of the environment to run the command on.
+     * @option constant-name The constant name to use when running the cURL test.
+     */
+    public function showCertsCommand(
+        $site_env_id,
+        $options = [ 'constant-name' => null ]
+    ) {
+        // Validate the options.
+        if (empty($options['constant-name'])) {
+            throw new TerminusException('The {constant-name} option must be specified.');
+        }
+
+        $this->baseCommand($site_env_id);
+        $results = $this->runTest($site_env_id, 'showcerts.php', $options);
+
+        $this->log()->notice($results['results']);
+        $this->log()->info('Elapsed time (sec): ' . $results['elapsed']);
+    }
+
+    /**
      * Rsync a file from a source to a destination.
      *
      * @param string $src The source of the file to rsync.
