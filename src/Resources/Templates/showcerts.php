@@ -2,7 +2,11 @@
 
 $constantName = '%constant-name%';
 $constantValue = constant($constantName);
-$command = sprintf('openssl s_client -connect 127.0.0.1:%s -showcerts', $constantValue);
+$proto = '%proto%';
+if (!empty($proto)) {
+    $proto = "-starttls $proto";
+}
+$command = sprintf('openssl s_client -connect 127.0.0.1:%s -showcerts %s', $constantValue, $proto);
 $result = 0;
 
 $starttime = microtime(true);

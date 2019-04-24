@@ -253,14 +253,28 @@ class PegCommand extends SSHBaseCommand
      *
      * @param string $site_env_id Name of the environment to run the command on.
      * @option constant-name The constant name to use when running the cURL test.
+     * @option proto The specific protocol to test (currently supports smtp, pop3, imap, ftp, and xmpp).
      */
     public function showCertsCommand(
         $site_env_id,
-        $options = [ 'constant-name' => null ]
+        $options = [ 'constant-name' => null, 'proto' => null ]
     ) {
         // Validate the options.
         if (empty($options['constant-name'])) {
             throw new TerminusException('The {constant-name} option must be specified.');
+        }
+
+        // Protocol is optional but if you're testing an FTP or SMTP server you
+        // might want to include that.
+        if (empty($options['proto'])) {
+            // Convert null values to an empty string.
+            $options['proto'] = '';
+        } else {
+            $supportedProtos = ['smtp', 'pop3', 'imap', 'ftp', 'xmpp'];
+            $options['proto'] = \strtolower($options['proto']);
+            if (\array_search($options['proto'], $supportedProtos) === false) {
+                throw new TerminusException('The {proto} option must be one of the following: ' . \implode(', ', $supportedProtos));
+            }
         }
 
         $this->baseCommand($site_env_id);
