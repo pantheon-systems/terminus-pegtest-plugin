@@ -285,6 +285,38 @@ class PegCommand extends SSHBaseCommand
     }
 
     /**
+     * Run a simple SSH test to ensure PEG setup for basic SSH requests is working properly.
+     *
+     * @authorize
+     *
+     * @command peg:test:ssh
+     * @aliases ptssh
+     *
+     * @param string $site_env_id Name of the environment to run the command on.
+     * @option constant-name The constant name to use when running the cURL test.
+     */
+    public function simpleSshTestCommand(
+        $site_env_id,
+        $options = ['constant-name' => null]
+    ) {
+        // Validate the options.
+        if (empty($options['constant-name'])) {
+            throw new TerminusException('The {constant-name} option must be specified.');
+        }
+
+        $this->baseCommand($site_env_id);
+        $results = $this->runTest($site_env_id, 'sshtest.php', $options);
+
+        if (!empty($results['results'])) {
+            $this->log()->notice('Simple SSH test completed succesfully; PEG is configured properly.');
+            $this->log()->info($results['results']);
+            $this->log()->info('Elapsed time (sec): ' . $results['elapsed']);
+        } else {
+            $this->log()->error('Simple SSH test completed unsuccessfully. Error was: ' . $results['error']);
+        }
+    }
+
+    /**
      * Rsync a file from a source to a destination.
      *
      * @param string $src The source of the file to rsync.
