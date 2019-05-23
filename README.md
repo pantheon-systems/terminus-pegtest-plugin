@@ -102,6 +102,14 @@ Options:
 
 This command uses web sockets to connect to a remote server and checks to see if it is an SSH server. (Currently the mechanism is that it looks for `ssh` in the first 2048 bytes of the server response when connecting, as OpenSSH servers identify themselves as such upon a successful connection. PRs for other cases are welcome.) The output from this command will indicate success or failure. For additional debugging information (which includes a status message consisting of the header information returned), use Terminus's `-vv` flag.
 
+## Installation
+For help installing, see [Manage Plugins](https://pantheon.io/docs/terminus/plugins/)
+
+```
+mkdir -p ~/.terminus/plugins
+composer create-project -d ~/.terminus/plugins pantheon-systems/terminus-pegtest-plugin:~1
+```
+
 ## Help
 
 Run `terminus list peg` for a complete list of available commands. Use `terminus help <command>` to get help on any individual command.
