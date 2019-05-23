@@ -9,6 +9,7 @@ Adds the following commands to Terminus:
 * `peg:test:curl` (alias: `ptcurl`) - runs a test that determines whether cURL functionality is working as expected.
 * `peg:test:ldap` (alias: `ptldap`) - runs a test that determines whether LDAP functionality is working as expected.
 * `peg:test:smtp` (alias: `ptsmtp`) - runs a test that determines whether SMTP functionality is working as expected.
+* `peg:test:ssh` (alias: `ptssh`) - runs a test that determines whether SSH functionality is working as expected.
 
 ## Details
 
