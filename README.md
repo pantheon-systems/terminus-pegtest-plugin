@@ -89,6 +89,18 @@ Options:
 
 This command uses web sockets to connect to the client's SMTP server and issue a `HELO` command to determine whether or not communication is flowing to the client's SMTP server. The output from this command will indicate success or failure. For additional debugging information (which includes the output from the `HELO` command and the elapsed time of the test), use Terminus's `-vv` flag.
 
+### `peg:test:ssh`
+
+Example command: `terminus peg:test:ssh my-site.dev --constant-name=PANTHEON_SOIP_CONSTANT_NAME
+
+Options:
+
+| Option          | Description                                                        |
+|-----------------|--------------------------------------------------------------------|
+| --constant-name | The name of the constant to use. Must start with `PANTHEON_SOIP_`. |
+
+This command uses web sockets to connect to a remote server and checks to see if it is an SSH server. (Currently the mechanism is that it looks for `ssh` in the first 2048 bytes of the server response when connecting, as OpenSSH servers identify themselves as such upon a successful connection. PRs for other cases are welcome.) The output from this command will indicate success or failure. For additional debugging information (which includes a status message consisting of the header information returned), use Terminus's `-vv` flag.
+
 ## Help
 
 Run `terminus list peg` for a complete list of available commands. Use `terminus help <command>` to get help on any individual command.
