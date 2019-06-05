@@ -165,6 +165,7 @@ class PegCommand extends SSHBaseCommand
      * @option proto The LDAP protocol to use (2/3)
      * @option bind-dn The bind DN to use when connecting to the LDAP server. Leave blank to perform an anonymous binding.
      * @option bind-password The bind password to use when connecting to the LDAP server.
+     * @option bypass-tls-check Bypass TLS certificate validation. The drupal LDAP module doesn't have this set but it is a useful debugging option. (TRUE/FALSE)
      */
     public function ldapTestComand(
         $site_env_id,
@@ -174,6 +175,7 @@ class PegCommand extends SSHBaseCommand
             'proto' => 3,
             'bind-dn' => null,
             'bind-password' => null,
+            'bypass-tls-check' => 'false',
         ]
     ) {
         // Validate the options.

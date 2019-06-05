@@ -8,6 +8,8 @@ $proto = '%proto%';
 $bindDN = '%bind-dn%';
 $bindPW = '%bind-password%';
 $isAnonBinding = empty($bindDN);
+$bypassTlsCheck = filter_var('%bypass-tls-check%', FILTER_VALIDATE_BOOLEAN);
+
 
 $testResults = null;
 $results = '';
@@ -25,6 +27,9 @@ if (!$ds = ldap_connect($ldapAddress)) {
     $error = "Unable to establish a connection with {$ldapAddress}.";
 } else {
     ldap_set_option($ds, LDAP_OPT_PROTOCOL_VERSION, $proto);
+    if ($bypassTlsCheck) {
+        ldap_set_option($ds, LDAP_OPT_X_TLS_REQUIRE_CERT, LDAP_OPT_X_TLS_ALLOW);
+    }
     if ($isAnonBinding) {
         if (!$bind = ldap_bind($ds)) {
             $testStatus = false;
