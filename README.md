@@ -68,12 +68,13 @@ Example command: `terminus peg:test:ldap mysite.dev --constant-name=PANTHEON_SOI
 Options:
 
 | Option          | Description                                                                                                                                                                              |
-|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| --constant-name | The name of the constant to use. Must start with `PANTHEON_SOIP_`.                                                                                                                       |
-| --use-tls       | If `TRUE`, opens a connection using `ldaps://`; if `FALSE`, opens a connection using `ldap://`. Default: `TRUE`                                                                          |
-| --proto         | The [LDAP protocol](http://php.net/manual/en/function.ldap-set-option.php) to use with the connection. Can be `2` or `3` (default).                                                     |
-| --bind-dn       | The bind DN to use when connecting to the LDAP server. Leave blank to perform an anonymous binding                                                                                       |
-| --bind-password | The bind password to use when connecting to the LDAP server. Leave blank to be prompted to enter the password on the command line, or specify the password directly on the command line. |
+|--------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --constant-name    | The name of the constant to use. Must start with `PANTHEON_SOIP_`.                                                                                                                       |
+| --use-tls          | If `TRUE`, opens a connection using `ldaps://`; if `FALSE`, opens a connection using `ldap://`. Default: `TRUE`                                                                          |
+| --proto            | The [LDAP protocol](http://php.net/manual/en/function.ldap-set-option.php) to use with the connection. Can be `2` or `3` (default).                                                     |
+| --bind-dn          | The bind DN to use when connecting to the LDAP server. Leave blank to perform an anonymous binding                                                                                       |
+| --bind-password    | The bind password to use when connecting to the LDAP server. Leave blank to be prompted to enter the password on the command line, or specify the password directly on the command line. |
+| --bypass-tls-check | Bypass the PHP TLS check of the remote certificate. This option has security considerations when running in a live environment but is useful for debugging intermittent connection problems. Default: `FALSE` |
 
 This command uses PHP's built-in [LDAP functions](http://php.net/manual/en/book.ldap.php) to communicate with a client's LDAP server and perform a basic binding. The output from this command will indicate success or failure. For additional debugging information (which includes a status message indicating the test parameters and results, and the elapsed time of the test), use Terminus's `-vv` flag.
 
