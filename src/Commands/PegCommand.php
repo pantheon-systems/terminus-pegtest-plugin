@@ -17,7 +17,7 @@ class PegCommand extends SSHBaseCommand
     /**
      * @inheritdoc
      */
-    protected $valid_frameworks = ['drupal', 'drupal8', 'wordpress'];
+    protected $valid_frameworks = ['drupal', 'drupal8', 'wordpress', 'wordpress_network'];
 
     /**
      * @inheritdoc
@@ -432,6 +432,7 @@ class PegCommand extends SSHBaseCommand
                 $this->command = 'drush';
                 break;
             case 'wordpress':
+            case 'wordpress_network':
                 $this->command = 'wp';
                 break;
         }
