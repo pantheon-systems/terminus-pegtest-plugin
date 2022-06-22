@@ -1,5 +1,7 @@
 # Terminus PEG Test Plugin
 
+[![Unsupported](https://img.shields.io/badge/Pantheon-Unsupported-yellow?logo=pantheon&color=FFDC28)](https://pantheon.io/docs/oss-support-levels#unsupported)
+
 Terminus plugin that allows for testing [Pantheon Enterprise Gateway (PEG)](https://pantheon.io/docs/pantheon-enterprise-gateway/) configurations.
 
 Adds the following commands to Terminus:
