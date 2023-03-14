@@ -108,6 +108,13 @@ This command uses web sockets to connect to a remote server and checks to see if
 ## Installation
 For help installing, see [Manage Plugins](https://pantheon.io/docs/terminus/plugins/)
 
+### Self Plugin Install
+```
+git clone https://github.com/pantheon-systems/terminus-pegtest-plugin.git
+terminus self:plugin:install terminus-pegtest-plugin
+```
+
+### Manual Method
 ```
 mkdir -p ~/.terminus/plugins
 composer create-project -d ~/.terminus/plugins pantheon-systems/terminus-pegtest-plugin:~1
