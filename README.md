@@ -109,9 +109,18 @@ This command uses web sockets to connect to a remote server and checks to see if
 For help installing, see [Manage Plugins](https://pantheon.io/docs/terminus/plugins/)
 
 ### Self Plugin Install
+
+Option 1
+
+```
+terminus self:plugin:install git@github.com:pantheon-systems/terminus-pegtest-plugin.git
+```
+
+Option 2
+
 ```
 git clone https://github.com/pantheon-systems/terminus-pegtest-plugin.git
-terminus self:plugin:install terminus-pegtest-plugin
+terminus self:plugin:install ./terminus-pegtest-plugin
 ```
 
 ### Manual Method
