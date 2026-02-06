@@ -43,7 +43,7 @@ class PegCommand extends SSHBaseCommand
      *
      * @var string
      */
-    protected $siteaddress = '';
+    protected $siteAddress = '';
 
     /**
      * The site framework.
@@ -421,6 +421,9 @@ class PegCommand extends SSHBaseCommand
         // Generate the test file based on command line options, then push to the site.
         $template = \file_get_contents(__DIR__ . "/../Resources/Templates/$filename");
         foreach ($options as $k => $v) {
+            if (!is_string($v)) {
+                continue;
+            }
             $template = str_replace("%$k%", \htmlspecialchars($v), $template);
         }
         \file_put_contents($testFilename, $template);
