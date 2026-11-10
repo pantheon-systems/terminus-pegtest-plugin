@@ -132,3 +132,12 @@ composer create-project -d ~/.terminus/plugins pantheon-systems/terminus-pegtest
 ## Help
 
 Run `terminus list peg` for a complete list of available commands. Use `terminus help <command>` to get help on any individual command.
+
+## Rollback
+
+- **When:** a merged change breaks the plugin for users (for example `terminus peg:test:ssh` fails after a fresh install).
+- **Recover:** merging to `master` is the release, because installs clone the head of `master`. Revert the change on `master` through a PR; people who already installed the bad commit uninstall and reinstall.
+- **Verify:** `git ls-remote https://github.com/pantheon-systems/terminus-pegtest-plugin.git refs/heads/master` shows the revert, and a fresh install lists the `peg` commands.
+- **Who to page:** `#ask-hosting` (owner: developer-experience). Nobody is paged automatically.
+
+Full procedure: [DEPLOYMENT.md](DEPLOYMENT.md#rollback).
