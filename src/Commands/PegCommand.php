@@ -65,11 +65,29 @@ class PegCommand extends SSHBaseCommand
     /**
      * Get some commonly-used information when a command first runs.
      *
-     * @param string $site_env_id Name of the environment to run the drush command on.
+     * @param string $site_env_id Target site and environment in <site>.<env> format.
+     * @return array Array containing [$site, $environment]
+     * @throws TerminusException
      */
     protected function baseCommand($site_env_id)
     {
+        // Enforce <site>.<env> format prior to performing site lookups
+        if (\strpos($site_env_id, '.') === false) {
+            throw new TerminusException(
+                'Please specify the environment in <site>.<env> or <UUID>.<env> format (e.g., {id}.dev or {id}.live).',
+                ['id' => $site_env_id]
+            );
+        }
+
         list($site, $environment) = $this->getSiteEnv($site_env_id);
+
+        if (!$site || !$environment) {
+            throw new TerminusException(
+                'Could not locate site or environment for target "{site_env_id}". Please check your permissions and spelling.',
+                ['site_env_id' => $site_env_id]
+            );
+        }
+
         $this->envID = $environment->getName();
         $this->siteID = $site->get('id');
         $this->siteAddress = "{$this->envID}.{$this->siteID}@appserver.{$this->envID}.{$this->siteID}.drush.in";
@@ -91,11 +109,11 @@ class PegCommand extends SSHBaseCommand
      *     target_port: Target Port
      * @return RowsOfFields
      *
-     * @param string $site_env_id Name of the environment to run the drush command on.
+     * @param string $site_uuid_and_env Target site and environment in <site_uuid>.<env> format (e.g. 7e428550-cfc6-4184-b4c8-60e341a0b522.dev)
      */
-    public function constantsListCommand($site_env_id)
+    public function constantsListCommand($site_uuid_and_env)
     {
-        list($site, $environment) = $this->baseCommand($site_env_id);
+        list($site, $environment) = $this->baseCommand($site_uuid_and_env);
         if ($stunnels = $site->get('stunnel')) {
             $stunnels = (array)$stunnels;
             $constants = array_map(function ($stunnelName, $stunnelDetails) {
@@ -120,7 +138,7 @@ class PegCommand extends SSHBaseCommand
      * @command peg:test:curl
      * @aliases ptcurl
      *
-     * @param string $site_env_id Name of the environment to run the command on.
+     * @param string $site_env_id Target site and environment in <site>.<env> or <UUID>.<env> format.
      * @option url The URL to use when running the cURL test.
      * @option constant-name The constant name to use when running the cURL test.
      */
@@ -159,7 +177,7 @@ class PegCommand extends SSHBaseCommand
      * @command peg:test:ldap
      * @aliases ptldap
      *
-     * @param string $site_env_id Name of the environment to run the command on.
+     * @param string $site_env_id Target site and environment in <site>.<env> or <UUID>.<env> format.
      * @option constant-name The constant name to use when running the cURL test
      * @option use-tls Whether or not to use TLS (TRUE/FALSE)
      * @option proto The LDAP protocol to use (2/3)
@@ -214,7 +232,7 @@ class PegCommand extends SSHBaseCommand
      * @command peg:test:smtp
      * @aliases ptsmtp
      *
-     * @param string $site_env_id Name of the environment to run the command on.
+     * @param string $site_env_id Target site and environment in <site>.<env> or <UUID>.<env> format.
      * @option constant-name The constant name to use when running the cURL test.
      * @option relay-address The address of the mail server to use an SMTP relay.
      */
@@ -253,7 +271,7 @@ class PegCommand extends SSHBaseCommand
      * @command peg:showcerts
      * @aliases ptcerts
      *
-     * @param string $site_env_id Name of the environment to run the command on.
+     * @param string $site_env_id Target site and environment in <site>.<env> or <UUID>.<env> format.
      * @option constant-name The constant name to use when running the cURL test.
      * @option proto The specific protocol to test (currently supports smtp, pop3, imap, ftp, and xmpp).
      */
@@ -294,7 +312,7 @@ class PegCommand extends SSHBaseCommand
      * @command peg:test:ssh
      * @aliases ptssh
      *
-     * @param string $site_env_id Name of the environment to run the command on.
+     * @param string $site_env_id Target site and environment in <site>.<env> or <UUID>.<env> format.
      * @option constant-name The constant name to use when running the cURL test.
      */
     public function simpleSshTestCommand(
@@ -381,7 +399,9 @@ class PegCommand extends SSHBaseCommand
      * Wrapper for PHP's passthru command.
      *
      * @param string $command The command to run.
+     * @param bool $quiet Whether to suppress output until completion.
      * @return string The output of the command.
+     * @throws TerminusException
      */
     protected function passthru($command, $quiet = true)
     {
@@ -412,6 +432,7 @@ class PegCommand extends SSHBaseCommand
      * @param array $options The options from the command line.
      *
      * @return array The results of the test.
+     * @throws TerminusException
      */
     protected function runTest($site_env_id, $filename, array $options)
     {
